@@ -21,7 +21,7 @@
     Script was designed to be used as detection script in Microsoft Intune "Remediations".
 
 .LINK
-    For more information, visit Github Readme
+    For more information, visit https://github.com/jmanuelng/MEM_ChangeBitlockerKeyProtectorType#readme
 #>
 
 #region Initialize

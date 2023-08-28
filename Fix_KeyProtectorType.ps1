@@ -7,18 +7,13 @@
     This script checks all volumes on a Windows device and changes the KeyProtector Type from TpmPin to Tpm
     for all encrypted volumes. It uses two functions: Set-BitLockerKeyProtectorType and Get-BitLockerKeyProtectorInfo.
 
-.EXAMPLE
-    .\MainScript.ps1
-    Executes the script to update BitLocker KeyProtector types for all volumes.
-
 .NOTES
-    File Name      : MainScript.ps1
-    Author         : Your Name
-    Prerequisite   : Run as Administrator
-    Copyright 2023 : Your Company
+    Last Modified   : August 27th, 2023
+    Author          : Manuel Nieto
+    Prerequisite    : Run as Administrator
 
 .LINK
-    For more information, visit [Your Documentation Link]
+    For more information, visit https://github.com/jmanuelng/MEM_ChangeBitlockerKeyProtectorType#readme
 #>
 
 
