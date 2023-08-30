@@ -2,11 +2,11 @@
 
 ## Overview
 
-This repository was created in response to a change in BitLocker policy within our organization. We transitioned to a policy that only allows the "TPM" KeyProtectorType for BitLocker-encrypted volumes. During this transition, it was discovered that many users had volumes encrypted with the "TpmPin" KeyProtectorType. To streamline the process of aligning these devices with the new policy, two PowerShell scripts were developed. These scripts are intended to be used as "Remediation" scripts in Microsoft Intune.
+This repository was created in response to a change in BitLocker policy within an organization. We transitioned to a policy that only allows the "TPM" KeyProtectorType for BitLocker-encrypted volumes. During this transition, it was discovered that many users had volumes encrypted with the "TpmPin" KeyProtectorType. Script were created to streamline the process of aligning devices with the new policy. Scripts are intended to be used as "Remediation" scripts in Microsoft Intune.
 
-- **Detect_KeyProtectorType.ps1**: This script scans all volumes on a Windows device to identify if any volume is encrypted with a BitLocker KeyProtector type of "TpmPin".
+- **Detect_KeyProtectorType.ps1**: Script scans all volumes on a Windows device to identify if any volume is encrypted with a BitLocker KeyProtector type of "TpmPin".
   
-- **Fix_KeyProtectorType.ps1**: This script checks all volumes on a Windows device and changes the KeyProtector Type from "TpmPin" to "Tpm" for all encrypted volumes.
+- **Fix_KeyProtectorType.ps1**: The "Remedaition" script, it checks all volumes on a Windows device and changes the KeyProtector Type from "TpmPin" to "Tpm" for all encrypted volumes. In tests Bitlocker encryption was turned off or suspended after change, so script also checks and turns it on again.
 
 ## Usage
 
@@ -59,6 +59,5 @@ The `MEM_ChangeBitlockerKeyProtectorType` repository scripts are provided under 
 This script is provided as-is with no warranties or guarantees of any kind. Always test scripts and tools in a controlled environment before deploying them in a production setting.
 
 ## Additional Resources
-
 For more information, please refer to the official [Microsoft Intune Documentation](https://docs.microsoft.com/en-us/mem/intune/).
 

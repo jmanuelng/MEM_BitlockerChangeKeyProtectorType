@@ -118,10 +118,7 @@ function Set-BitLockerKeyProtectorType {
         Set-BitLockerKeyProtectorType -MountPoint "D:" -NewKeyProtectorType "RecoveryPassword" -ProtectorValue "123456"
 
     .NOTES
-        File Name      : Set-BitLockerKeyProtectorType.ps1
-        Author         : Your Name
         Prerequisite   : Run as Administrator
-        Copyright 2023 : Your Company
     #>
 
     [CmdletBinding()]
@@ -137,7 +134,7 @@ function Set-BitLockerKeyProtectorType {
         [string]$ProtectorValue
     )
 
-    # Check if running as Administrator
+    # Check if running as Administrator. Yes, I know, super redundant, its becuase I might move this functions around.
     if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
         Write-Host "You must run this script as an Administrator."
         return
@@ -193,6 +190,54 @@ function Set-BitLockerKeyProtectorType {
     }
 
     Write-Host "Key protector type changed to $NewKeyProtectorType for $MountPoint."
+}
+
+function ResumeOrEnableBitLocker {
+    <#
+    .SYNOPSIS
+        This function attempts to resume or enable BitLocker encryption on a specified drive.
+
+    .DESCRIPTION
+        The function first checks the current status of BitLocker on the specified drive.
+        If BitLocker is off or suspended, it uses the Enable-BitLocker cmdlet to resume or start the encryption process.
+
+    .PARAMETER DriveLetter
+        The drive letter of the volume to enable BitLocker on, including the colon character.
+
+    .EXAMPLE
+        ResumeOrEnableBitLocker -DriveLetter "C:"
+
+    .NOTES
+        This script requires administrative privileges to modify BitLocker settings.
+    #>
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$DriveLetter
+    )
+
+    # Check if running as Administrator. Mega redundant so that function can be moved around.
+    if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+        Write-Host "You must run this script as an Administrator."
+        return
+    }
+
+    try {
+        # Check the current BitLocker status
+        $bitlockerStatus = Get-BitLockerVolume -MountPoint $DriveLetter
+
+        # If BitLocker is off or suspended, enable it
+        if ($bitlockerStatus.ProtectionStatus -eq "Off" -or $bitlockerStatus.ProtectionStatus -eq "Suspended") {
+            Enable-BitLocker -MountPoint $DriveLetter -SkipHardwareTest
+            Write-Host "BitLocker encryption initiated or resumed on drive $DriveLetter."
+        } else {
+            Write-Host "BitLocker already active on drive $DriveLetter."
+        }
+        
+    } catch {
+        # Handle exceptions and errors
+        Write-Host "Error occurred trying to enable Bitlocker: $_"
+    }
 }
 
 function WriteAndExitWithSummary {
@@ -261,7 +306,10 @@ function WriteAndExitWithSummary {
 # Initialize a variables and clear errors
 $Error.Clear()
 $executionSummary = ""
-$execStatus = 0  # Initialize execution status. 0: OK, 1: FAIL, -2: WARNING
+$execStatus = 0  # Initialize execution status. 0: OK, 1: FAIL, >0: WARNING
+
+# Easier to read in log file
+Write-Host "`n`n"
 
 # Check if running as Administrator
 # BitLocker settings requires administrative privileges.
@@ -310,12 +358,22 @@ foreach ($volume in $volumes) {
                 } catch {
                     $executionSummary += "Error updating $mountPoint. "
                     $execStatus = 1
+                    WriteAndExitWithSummary -StatusCode $execStatus -Summary $executionSummary
+                }
+                try {
+                    # Check if Encryption is On, if not, turn it On
+                    ResumeOrEnableBitLocker -DriveLetter $mountPoint
+                    $executionSummary += "Bitlocker On for $mountPoint. "
+                }
+                catch {
+                    $executionSummary += "Error turning Bitlocker On for $mountPoint. "
+                    $execStatus = -2 # Only Warning will be logged. It is assumed that an Intune Policy will eventually turn Bitlocker On.
                 }
             } elseif ($null -ne $keyProtectorTypes) {
                 $executionSummary += "Skipped $mountPoint (No TpmPin). "
             } else {
                 $executionSummary += "Skipped $mountPoint (Not encrypted). "
-                $execStatus = -2
+                $execStatus = -3
             }
         }
     }

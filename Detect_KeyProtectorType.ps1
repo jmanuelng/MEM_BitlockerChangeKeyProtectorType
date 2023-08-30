@@ -29,7 +29,7 @@
 # Initialize a variables and clean errors
 $Error.Clear()
 $executionSummary = ""
-$execStatus = 0  # Initialize execution status. 0: OK, 1: TpmPin Found, -1: Error
+$execStatus = 0  # Initialize execution status. 0: OK, 1: FAIL, >0: WARNING
 
 #endregion Initialize
 
@@ -195,9 +195,15 @@ foreach ($volume in $volumes) {
     if (($null -ne $volume.DriveLetter) -and ($volume.DriveType -eq "Fixed")) {
         $mountPoint = $volume.DriveLetter + ":"
         
+        # Log that a fixed drive was found.
+        $executionSummary += "Drive $mountPoint. "
+        
         # Check if the volume is encrypted with BitLocker
         $bitlockerStatus = Get-BitLockerVolume -MountPoint $mountPoint
         if ($bitlockerStatus.ProtectionStatus -eq "On") {
+            # Log that Bitlocker is On or enabled.
+            $executionSummary += "Bitlocker On for $mountPoint. "
+
             try {
                 $keyProtectorTypes = Get-BitLockerKeyProtectorInfo -MountPoint $mountPoint
             } catch {
@@ -212,9 +218,11 @@ foreach ($volume in $volumes) {
                 $execStatus = 1
                 break
             } else {
-                $executionSummary += "$mountPoint does not use TpmPin. "
+                $executionSummary += "TpmPin not used on $mountPoint. "
                 $execStatus = 0
             }
+        } else {
+            $executionSummary += "Drive $mountPoint without Bitlocker protection. "
         }
     }
 }
