@@ -1,4 +1,4 @@
-# MEM_ChangeBitlockerKeyProtectorType
+# MEM_BitlockerChangeKeyProtectorType
 
 ## Overview
 
