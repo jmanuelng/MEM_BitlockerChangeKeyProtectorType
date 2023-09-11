@@ -14,7 +14,7 @@
     Note: This script must be run as an Administrator to access BitLocker settings.
 
 .NOTES
-    Last Modified   : August 27th, 2023
+    Last Modified   : September 10th, 2023
     Author          : Manuel Nieto
     Prerequisite    : Run as Administrator
 
